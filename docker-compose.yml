@@ -1,0 +1,18 @@
+services:
+  my-portfolio-be:
+    image: my-portfolio-be
+    container_name: my-portfolio-be-container
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+
+  telegram-bot:
+    build: ./telegram_bot
+    image: telegram-bot
+    container_name: telegram-bot-container
+    restart: unless-stopped
+    env_file:
+      - ./telegram_bot/.env
