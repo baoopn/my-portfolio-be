@@ -19,6 +19,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SpotifyService {
@@ -51,7 +52,7 @@ public class SpotifyService {
 
     private Map<Integer, List<SpotifyRecentlyPlayedTrackDTO>> cachedRecentlyPlayedTracks = new HashMap<>();
     private Map<Integer, Long> lastRecentlyPlayedFetched = new HashMap<>();
-    private static final long RECENTLY_PLAYED_CACHE_DURATION = 10 * 1000; // 10 seconds
+    private static final long RECENTLY_PLAYED_CACHE_DURATION = 20 * 1000; // 20 seconds
 
     public String getAccessToken() {
         long now = System.currentTimeMillis();
@@ -98,7 +99,8 @@ public class SpotifyService {
     public SpotifyCurrentlyPlayingTrackDTO getCurrentlyPlayingTrack() {
         long now = System.currentTimeMillis();
 
-        if (cachedCurrentlyPlayingTrack != null && lastCurrentlyPlayingFetched + CURRENTLY_PLAYING_CACHE_DURATION > now) {
+        if (cachedCurrentlyPlayingTrack != null
+                && lastCurrentlyPlayingFetched + CURRENTLY_PLAYING_CACHE_DURATION > now) {
             return cachedCurrentlyPlayingTrack;
         }
 
@@ -136,7 +138,12 @@ public class SpotifyService {
 
             SpotifyCurrentlyPlayingTrackDTO track = new SpotifyCurrentlyPlayingTrackDTO();
             track.setAlbumImageUrl(jsonNode.get("item").get("album").get("images").get(0).get("url").asText());
-            track.setArtist(jsonNode.get("item").get("artists").get(0).get("name").asText());
+            track.setArtist(
+                    jsonNode.get("item").get("artists")
+                            .findValues("name")
+                            .stream()
+                            .map(JsonNode::asText)
+                            .collect(Collectors.joining(", ")));
             track.setPlaying(jsonNode.get("is_playing").asBoolean());
             track.setSongUrl(jsonNode.get("item").get("external_urls").get("spotify").asText());
             track.setTitle(jsonNode.get("item").get("name").asText());
@@ -156,7 +163,8 @@ public class SpotifyService {
     public List<SpotifyRecentlyPlayedTrackDTO> getRecentlyPlayedTracks(int limit) {
         long now = System.currentTimeMillis();
 
-        if (cachedRecentlyPlayedTracks.containsKey(limit) && lastRecentlyPlayedFetched.get(limit) + RECENTLY_PLAYED_CACHE_DURATION > now) {
+        if (cachedRecentlyPlayedTracks.containsKey(limit)
+                && lastRecentlyPlayedFetched.get(limit) + RECENTLY_PLAYED_CACHE_DURATION > now) {
             return cachedRecentlyPlayedTracks.get(limit);
         }
 
@@ -201,7 +209,12 @@ public class SpotifyService {
             for (JsonNode item : jsonNode.get("items")) {
                 SpotifyRecentlyPlayedTrackDTO track = new SpotifyRecentlyPlayedTrackDTO();
                 track.setAlbumImageUrl(item.get("track").get("album").get("images").get(0).get("url").asText());
-                track.setArtist(item.get("track").get("artists").get(0).get("name").asText());
+                track.setArtist(
+                        item.get("track").get("artists")
+                                .findValues("name")
+                                .stream()
+                                .map(JsonNode::asText)
+                                .collect(Collectors.joining(", ")));
                 track.setPlayedAt(ZonedDateTime.parse(item.get("played_at").asText()));
                 track.setSongUrl(item.get("track").get("external_urls").get("spotify").asText());
                 track.setTitle(item.get("track").get("name").asText());
