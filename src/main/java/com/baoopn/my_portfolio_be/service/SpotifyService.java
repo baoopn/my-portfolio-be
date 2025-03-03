@@ -4,6 +4,7 @@ import com.baoopn.my_portfolio_be.exception.SpotifyServiceException;
 import com.baoopn.my_portfolio_be.model.SpotifyCurrentlyPlayingTrackDTO;
 import com.baoopn.my_portfolio_be.model.SpotifyRecentlyPlayedTrackDTO;
 import com.baoopn.my_portfolio_be.model.SpotifyTokenRequestDTO;
+import com.baoopn.my_portfolio_be.utils.Constants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,26 +34,22 @@ public class SpotifyService {
     @Value("${SPOTIFY_REFRESH_TOKEN}")
     private String refreshToken;
 
-    @Value("${SPOTIFY_TOKEN_ENDPOINT}")
-    private String tokenEndpoint;
-
-    @Value("${SPOTIFY_NOW_PLAYING_ENDPOINT}")
-    private String nowPlayingEndpoint;
-
-    @Value("${SPOTIFY_RECENTLY_PLAYED_ENDPOINT}")
-    private String recentlyPlayedEndpoint;
+    // Using constants instead of @Value annotations
+    private static final String tokenEndpoint = Constants.SPOTIFY_TOKEN_ENDPOINT;
+    private static final String nowPlayingEndpoint = Constants.SPOTIFY_NOW_PLAYING_ENDPOINT;
+    private static final String recentlyPlayedEndpoint = Constants.SPOTIFY_RECENTLY_PLAYED_ENDPOINT;
 
     private String accessToken;
     private long lastFetched;
-    private static final long TOKEN_CACHE_DURATION = 59 * 60 * 1000; // 59 minutes
+    private static final long TOKEN_CACHE_DURATION = Constants.TOKEN_CACHE_DURATION_MS;
 
     private SpotifyCurrentlyPlayingTrackDTO cachedCurrentlyPlayingTrack;
     private long lastCurrentlyPlayingFetched;
-    private static final long CURRENTLY_PLAYING_CACHE_DURATION = 1000; // 1 second
+    private static final long CURRENTLY_PLAYING_CACHE_DURATION = Constants.CURRENTLY_PLAYING_CACHE_DURATION_MS;
 
     private Map<Integer, List<SpotifyRecentlyPlayedTrackDTO>> cachedRecentlyPlayedTracks = new HashMap<>();
     private Map<Integer, Long> lastRecentlyPlayedFetched = new HashMap<>();
-    private static final long RECENTLY_PLAYED_CACHE_DURATION = 20 * 1000; // 20 seconds
+    private static final long RECENTLY_PLAYED_CACHE_DURATION = Constants.RECENTLY_PLAYED_CACHE_DURATION_MS;
 
     public String getAccessToken() {
         long now = System.currentTimeMillis();

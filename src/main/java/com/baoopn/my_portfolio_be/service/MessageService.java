@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import com.baoopn.my_portfolio_be.utils.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,22 +23,17 @@ public class MessageService {
 	private String chatId;
 
 	// Email regex pattern
-	private static final Pattern EMAIL_PATTERN = Pattern.compile(
-			"^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
+	private static final Pattern EMAIL_PATTERN = Pattern.compile(Constants.EMAIL_REGEX);
 
 	// Phone number regex pattern - supports various formats
-	private static final Pattern PHONE_PATTERN = Pattern.compile(
-			"^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$");
+	private static final Pattern PHONE_PATTERN = Pattern.compile(Constants.PHONE_REGEX);
 
-	public boolean sendTelegramMessage(String name, String contact, String subject, String message, String contactType) {
+	public boolean sendTelegramMessage(String name, String contact, String subject, String message,
+			String contactType) {
 
 		// Format the message with the contact type
 		String formattedMessage = String.format(
-				"You have received a new message from your website:\n\n" +
-						"*Name:* %s\n" +
-						"*Contact \\(%s\\):* `%s`\n" +
-						"*Subject:* %s\n\n" +
-						"*Message:*\n%s",
+				Constants.TELEGRAM_MESSAGE_FORMAT,
 				escapeMarkdown(name),
 				contactType,
 				escapeMarkdown(contact),
@@ -50,7 +46,8 @@ public class MessageService {
 			RestTemplate restTemplate = new RestTemplate();
 
 			// Set the URL for the Telegram Bot API
-			String telegramApiUrl = "https://api.telegram.org/bot" + botToken + "/sendMessage";
+			String telegramApiUrl = Constants.TELEGRAM_API_BASE_URL + botToken
+					+ Constants.TELEGRAM_SEND_MESSAGE_ENDPOINT;
 
 			// Set headers
 			HttpHeaders headers = new HttpHeaders();
@@ -72,13 +69,9 @@ public class MessageService {
 					String.class);
 
 			// Check if the request was successful
-			if (response.getStatusCode().is2xxSuccessful()) {
-				return true;
-			} else {
-				return false;
-			}
+			return response.getStatusCode().is2xxSuccessful();
+
 		} catch (RestClientException e) {
-			System.err.println("Failed to send Telegram message: " + e.getMessage());
 			return false;
 		}
 	}
@@ -110,6 +103,6 @@ public class MessageService {
 			return "";
 		}
 
-		return text.replaceAll("([_*\\[\\]()~`>#+\\-=|{}.!])", "\\\\$1");
+		return text.replaceAll(Constants.MARKDOWN_SPECIAL_CHARS, "\\\\$1");
 	}
 }
