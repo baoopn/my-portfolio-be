@@ -4,8 +4,6 @@ services:
     container_name: my-portfolio-be-container
     build: .
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "8080:8080"
 
