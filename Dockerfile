@@ -15,7 +15,9 @@ RUN ./mvnw dependency:go-offline -B
 
 # Copy the project source
 COPY src ./src
-COPY .env .
+
+# Copy .env if it exists (ignore if not present)
+RUN cp .env . 2>/dev/null || true
 
 # Build the application
 RUN ./mvnw package -DskipTests
