@@ -1,4 +1,4 @@
-FROM openjdk:24-ea-24-slim
+FROM eclipse-temurin:24-jdk-alpine
 WORKDIR /app
 
 # Copy the Maven Wrapper files
@@ -9,6 +9,9 @@ COPY pom.xml .
 
 # Make mvnw executable
 RUN chmod +x mvnw
+
+# Install netcat for health checks
+RUN apk add --no-cache netcat-openbsd
 
 # Download dependencies (this layer can be cached unless pom.xml changes)
 RUN ./mvnw dependency:go-offline -B
@@ -29,4 +32,4 @@ RUN cp target/*.jar app.jar
 EXPOSE 8080
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "--enable-native-access=ALL-UNNAMED", "-jar", "/app/app.jar"]
