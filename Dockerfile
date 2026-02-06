@@ -1,4 +1,4 @@
-FROM openjdk:24-slim
+FROM openjdk:24-ea-24-slim
 WORKDIR /app
 
 # Copy the Maven Wrapper files
